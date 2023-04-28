@@ -6,12 +6,12 @@ export enum UpDown {
 
 @Injectable()
 export class TelemetryHelpers {
-    getUpDownStatus(threshold: number) {
+    getUpDownStatus(threshold: number): string {
         const upDown = Math.random() >= threshold ? UpDown.Up: UpDown.Down;
         return upDown.toString();
     }
 
-    getRandomTempIn() {
+    getRandomTempIn(): number {
         return 45 + Number(Math.random().toFixed(2)) * 15;
     }
 

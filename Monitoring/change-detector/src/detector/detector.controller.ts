@@ -5,8 +5,4 @@ import { DetectorService } from './detector.service';
 export class DetectorController {
     constructor(private detectorService: DetectorService) {}
         
-    @Post()
-    async GetProducerTelemetryAndQueue() {
-       // const telemetryDTO = await this.detectorService.ProcessQueue();
-    }
 }

@@ -1,12 +1,13 @@
-import { Controller, Get, Param} from '@nestjs/common';
+import { Controller, Post, Param, Body} from '@nestjs/common';
 import { TelemetryCollectorService } from './telemetrycollector.service';
+import { PublishTelemetryDto } from './dto';
 
 @Controller('telemetry/')
 export class TelemetryCollectorController {
     constructor(private telemetryCollectorService: TelemetryCollectorService) {}
         
-    @Get(':minerUrl')
-    async getTelemetry(@Param('minerUrl') minerUrl: string ) {
-        await this.telemetryCollectorService.getAndQueueProducerTelemetry(minerUrl);
+    @Post('publish')
+    async PublishTelemetry(@Body() dto: PublishTelemetryDto): Promise<void> {
+        await this.telemetryCollectorService.getAndQueueProducerTelemetry(dto.Url);
     }
 }

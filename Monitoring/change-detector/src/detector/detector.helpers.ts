@@ -13,7 +13,7 @@ export class DetectorHelpers {
 
     constructor(private config: ConfigService,) {}
 
-    async DetectAnomalies(rawTelemetryDTO: CreateRawTelemetryDTO) {
+    async DetectAnomalies(rawTelemetryDTO: CreateRawTelemetryDTO): Promise<CreateAnomaliesDTO[]> {
         
         const anomaliesDTOs: CreateAnomaliesDTO[] = [];
         const minerDataObject = JSON.parse(rawTelemetryDTO.minerData);
@@ -64,13 +64,13 @@ export class DetectorHelpers {
         return anomaliesDTOs;
     }
 
-    private GetUpDownAnomaly(minerId: string, propertyName: string, minerDataObject: object) {
+    private GetUpDownAnomaly(minerId: string, propertyName: string, minerDataObject: object): CreateAnomaliesDTO {
         if (minerDataObject[propertyName] == UpDown.Down) {
             return this.CreateAnomalyDTO(minerId, propertyName, minerDataObject);
         }
     }
 
-    private GetTempInAnomaly(minerId: string, propertyName: string, minerDataObject: object) {
+    private GetTempInAnomaly(minerId: string, propertyName: string, minerDataObject: object): CreateAnomaliesDTO {
 
         const minNormalTemp = Number(this.config.get('MinNormalTemp'));
 
@@ -79,7 +79,7 @@ export class DetectorHelpers {
         }
     }
 
-    private GetTempOutAnomaly(minerId: string, propertyName: string, minerDataObject: object) {
+    private GetTempOutAnomaly(minerId: string, propertyName: string, minerDataObject: object): CreateAnomaliesDTO {
 
         const maxNormalTemp = Number(this.config.get('MaxNormalTemp'));
 
@@ -88,7 +88,7 @@ export class DetectorHelpers {
         }
     }
 
-    private GetHashrateAnomaly(minerId: string, propertyName: string, minerDataObject: object) {
+    private GetHashrateAnomaly(minerId: string, propertyName: string, minerDataObject: object): CreateAnomaliesDTO {
 
         const minNormalHashRate = Number(this.config.get('MinNormalHashRate'));
 
@@ -97,7 +97,7 @@ export class DetectorHelpers {
         }
     }
 
-    private GetFanSpeedAnomaly(minerId: string, propertyName: string, minerDataObject: object) {
+    private GetFanSpeedAnomaly(minerId: string, propertyName: string, minerDataObject: object): CreateAnomaliesDTO[] {
 
         const minNormalFanSpeed = Number(this.config.get('MinNormalFanSpeed'));
         const fanSpeeds = minerDataObject[propertyName].toString();
@@ -107,14 +107,14 @@ export class DetectorHelpers {
         let i = 0;
         fanSpeedArray.forEach(fanSpeed => {
             if (Number(fanSpeed) < minNormalFanSpeed) {
-                //anomaliesDTOs.push(this.CreateAnomalyDTO(minerId, propertyName, minerDataObject));
+                anomaliesDTOs.push(this.CreateAnomalyDTO(minerId, propertyName, minerDataObject));
             }
         });
 
         return anomaliesDTOs;
     }
 
-    private CreateAnomalyDTO(minerId: string, propertyName: string, minerDataObject: object) {
+    private CreateAnomalyDTO(minerId: string, propertyName: string, minerDataObject: object): CreateAnomaliesDTO {
         const anomaly = new CreateAnomaliesDTO();
         anomaly.minerId = minerId;
         anomaly.propertyName = propertyName;

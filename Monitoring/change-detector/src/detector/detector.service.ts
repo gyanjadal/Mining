@@ -16,7 +16,7 @@ export class DetectorService {
   private readonly logger = new Logger(DetectorService.name);
 
   @Process()
-  async ProcessQueue(job: Job<unknown>) {
+  async ProcessQueue(job: Job<unknown>): Promise<void> {
     
     const telemetry = JSON.stringify(job.data);
     this.logger.log(telemetry);
@@ -28,14 +28,14 @@ export class DetectorService {
     rawTelemetryDTO.minerData = telemetry;
 
     try {
-    await this.SaveRawTelemetryToDB(rawTelemetryDTO);
+      await this.SaveRawTelemetryToDB(rawTelemetryDTO);
 
-    //Detect Anomalies
-    const anomaliesDTOs = await this.detectorHelpers.DetectAnomalies(rawTelemetryDTO);
+      //Detect Anomalies
+      const anomaliesDTOs = await this.detectorHelpers.DetectAnomalies(rawTelemetryDTO);
 
-    //Detect Anomalies and Save to DB
-    this.logger.log("Anomalies found: " + anomaliesDTOs.length);
-    await this.SaveAnomaliesToDB(anomaliesDTOs);
+      //Detect Anomalies and Save to DB
+      this.logger.log("Anomalies found: " + anomaliesDTOs.length);
+      await this.SaveAnomaliesToDB(anomaliesDTOs);
     }
     catch(error) {
       this.logger.error(error);
@@ -44,7 +44,7 @@ export class DetectorService {
 
   async SaveRawTelemetryToDB(
     rawTelemetryDTO: CreateRawTelemetryDTO,
-  ) {
+  ): Promise<void> {
       this.logger.log("Saving Raw Telemetry : ", JSON.stringify(rawTelemetryDTO));
 
       await this.prisma.minerTelemetry.create({
@@ -57,7 +57,7 @@ export class DetectorService {
   
   async SaveAnomaliesToDB(
     anomaliesDTOs: CreateAnomaliesDTO[],
-  ) {
+  ): Promise<void> {
     this.logger.log("Saving Anomalies : ", JSON.stringify(anomaliesDTOs));
 
     //TODO : Convert above to a single call

@@ -9,7 +9,7 @@ export class CollectorSchedulerService {
     constructor(private telemetryCollectorService: TelemetryCollectorService) {}
 
   @Cron(CronExpression.EVERY_10_MINUTES)
-  async scheduleTask() {
+  async scheduleTask(): Promise<void> {
       this.logger.log('Waking up to collect data from all miners...');
 
       const minerUrls: string[] = await this.telemetryCollectorService.getMinerUrls();

@@ -18,19 +18,24 @@ export class TelemetryCollectorService {
     ) {
   }
 
-  async getAndQueueProducerTelemetry(minerUrl: string) {
+  async getAndQueueProducerTelemetry(minerUrl: string): Promise<void> {
 
-    this.logger.log("Fetching telemetry for miner", minerUrl);
-    const response = await axios.get(minerUrl);
-    this.logger.log("Telemetry of miner received successfully", response.data);
+    try {
+      this.logger.log("Fetching telemetry for miner", minerUrl);
+      const response = await axios.get(minerUrl);
+      this.logger.log("Telemetry of miner received successfully", response.data);
 
-    this.logger.log("Queueing telemetry for miner", minerUrl);
-    await this.telemetryQueue.add(response.data);
-    this.logger.log("Queued telemetry for miner successfully", minerUrl);
+      this.logger.log("Queueing telemetry for miner", minerUrl);
+      await this.telemetryQueue.add(response.data);
+      this.logger.log("Queued telemetry for miner successfully", minerUrl);
+    }
+    catch(error) {
+      this.logger.error(error);
+    }
   }
 
   //TODO - Move this to fetch from DB after creating a Miner Management Module
-  async getMinerUrls() {
+  async getMinerUrls(): Promise<string[]> {
 
     const minerUrl = this.config.get('MINER_URL');
     const minerCount = Number(this.config.get('MINER_COUNT'));

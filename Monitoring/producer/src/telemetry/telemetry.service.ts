@@ -13,7 +13,7 @@ export class TelemetryService {
   constructor(private config: ConfigService, private helpers: TelemetryHelpers) {
   }
 
-  getTelemetry(uuid: UUID) {
+  getTelemetry(uuid: UUID): TelemetryDTO {
 
     const telemetryDTO = new TelemetryDTO();
     telemetryDTO.id = uuid;

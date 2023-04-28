@@ -9,9 +9,10 @@ import { CollectorSchedulerService } from './scheduler/collectorscheduler.servic
     imports: [
       BullModule.forRoot({
         redis: {
-          host: 'localhost',
-          port: 6379,
-        },
+            host: 'localhost', 
+            port: 6379,
+            connectTimeout: 5000, //Timeout in ms
+          },
       }),
       BullModule.registerQueue({
         name: TELEMETRY_QUEUE
