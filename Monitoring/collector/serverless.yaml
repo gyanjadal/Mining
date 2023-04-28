@@ -1,0 +1,22 @@
+service: telemetry-collector
+
+useDotenv: true
+
+plugins:
+  - serverless-offline
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  environment:
+    REDIS_URI=redis://clustercfg.gjrediscluster.rxcry2.memorydb.us-east-2.amazonaws.com:6379
+functions:
+  main:
+    handler: dist/serverless.handler
+    events:
+      - http:
+          method: ANY
+          path: /
+      - http:
+          method: ANY
+          path: '{proxy+}'

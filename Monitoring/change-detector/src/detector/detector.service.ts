@@ -16,7 +16,7 @@ export class DetectorService {
   private readonly logger = new Logger(DetectorService.name);
 
   @Process()
-  async ProcessQueue(job: Job<unknown>): Promise<void> {
+  async processQueue(job: Job<unknown>): Promise<void> {
     
     const telemetry = JSON.stringify(job.data);
     this.logger.log(telemetry);
@@ -28,21 +28,21 @@ export class DetectorService {
     rawTelemetryDTO.minerData = telemetry;
 
     try {
-      await this.SaveRawTelemetryToDB(rawTelemetryDTO);
+      await this.saveRawTelemetryToDB(rawTelemetryDTO);
 
       //Detect Anomalies
-      const anomaliesDTOs = await this.detectorHelpers.DetectAnomalies(rawTelemetryDTO);
+      const anomaliesDTOs = await this.detectorHelpers.detectAnomalies(rawTelemetryDTO);
 
       //Detect Anomalies and Save to DB
       this.logger.log("Anomalies found: " + anomaliesDTOs.length);
-      await this.SaveAnomaliesToDB(anomaliesDTOs);
+      await this.saveAnomaliesToDB(anomaliesDTOs);
     }
     catch(error) {
       this.logger.error(error);
     }
   }
 
-  async SaveRawTelemetryToDB(
+  async saveRawTelemetryToDB(
     rawTelemetryDTO: CreateRawTelemetryDTO,
   ): Promise<void> {
       this.logger.log("Saving Raw Telemetry : ", JSON.stringify(rawTelemetryDTO));
@@ -55,7 +55,7 @@ export class DetectorService {
       });
     }
   
-  async SaveAnomaliesToDB(
+  async saveAnomaliesToDB(
     anomaliesDTOs: CreateAnomaliesDTO[],
   ): Promise<void> {
     this.logger.log("Saving Anomalies : ", JSON.stringify(anomaliesDTOs));

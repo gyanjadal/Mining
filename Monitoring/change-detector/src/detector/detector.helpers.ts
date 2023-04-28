@@ -13,7 +13,7 @@ export class DetectorHelpers {
 
     constructor(private config: ConfigService,) {}
 
-    async DetectAnomalies(rawTelemetryDTO: CreateRawTelemetryDTO): Promise<CreateAnomaliesDTO[]> {
+    async detectAnomalies(rawTelemetryDTO: CreateRawTelemetryDTO): Promise<CreateAnomaliesDTO[]> {
         
         const anomaliesDTOs: CreateAnomaliesDTO[] = [];
         const minerDataObject = JSON.parse(rawTelemetryDTO.minerData);
