@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { UUID } from 'crypto';
-import { TelemetryDTO } from './dto/telemetry.dto';
+import { TelemetryDto } from './dto/telemetry.dto';
 import { TelemetryHelpers } from './telemetry.helpers';
 
 
@@ -13,14 +13,17 @@ export class TelemetryService {
   constructor(private config: ConfigService, private helpers: TelemetryHelpers) {
   }
 
-  getTelemetry(uuid: UUID): TelemetryDTO {
+  // Get Telemetry from Miner
+  getTelemetry(uuid: UUID): TelemetryDto {
 
-    const telemetryDTO = new TelemetryDTO();
-    telemetryDTO.id = uuid;
+    //Simulated Data
+
+    const telemetryDto = new TelemetryDto();
+    telemetryDto.id = uuid;
 
     //Add Error Handling here
     if (uuid.length != 36) 
-        return telemetryDTO;
+        return telemetryDto;
 
     const healthFailureThreshold = Number(this.config.get('HealthFailureThreshold'));
     const poolFailureThreshold = Number(this.config.get('PoolFailureThreshold'));
@@ -31,25 +34,25 @@ export class TelemetryService {
     const abnormalFanSpeedThreshold = Number(this.config.get('AbnormalFanSpeedThreshold'));
     const minNormalFanSpeed = Number(this.config.get('MinNormalFanSpeed'));
 
-    telemetryDTO.health = this.helpers.getUpDownStatus(healthFailureThreshold);
-    telemetryDTO.pool = this.helpers.getUpDownStatus(poolFailureThreshold);
-    telemetryDTO.temp1_in = this.helpers.getRandomTempIn();
-    telemetryDTO.temp1_out = this.helpers.getRandomTempOut(maxNormalTemp, abnormalTempThreshold);
-    telemetryDTO.temp2_in = this.helpers.getRandomTempIn();;
-    telemetryDTO.temp2_out = this.helpers.getRandomTempOut(maxNormalTemp, abnormalTempThreshold);
-    telemetryDTO.temp3_in = this.helpers.getRandomTempIn();;
-    telemetryDTO.temp3_out = this.helpers.getRandomTempOut(maxNormalTemp, abnormalTempThreshold);
-    telemetryDTO.temp4_in = this.helpers.getRandomTempIn();;
-    telemetryDTO.temp4_out = this.helpers.getRandomTempOut(maxNormalTemp, abnormalTempThreshold);
-    telemetryDTO.fans = [
+    telemetryDto.health = this.helpers.getUpDownStatus(healthFailureThreshold);
+    telemetryDto.pool = this.helpers.getUpDownStatus(poolFailureThreshold);
+    telemetryDto.temp1_in = this.helpers.getRandomTempIn();
+    telemetryDto.temp1_out = this.helpers.getRandomTempOut(maxNormalTemp, abnormalTempThreshold);
+    telemetryDto.temp2_in = this.helpers.getRandomTempIn();;
+    telemetryDto.temp2_out = this.helpers.getRandomTempOut(maxNormalTemp, abnormalTempThreshold);
+    telemetryDto.temp3_in = this.helpers.getRandomTempIn();;
+    telemetryDto.temp3_out = this.helpers.getRandomTempOut(maxNormalTemp, abnormalTempThreshold);
+    telemetryDto.temp4_in = this.helpers.getRandomTempIn();;
+    telemetryDto.temp4_out = this.helpers.getRandomTempOut(maxNormalTemp, abnormalTempThreshold);
+    telemetryDto.fans = [
                             this.helpers.getRandomFanSpeed(minNormalFanSpeed, abnormalFanSpeedThreshold), 
                             this.helpers.getRandomFanSpeed(minNormalFanSpeed, abnormalFanSpeedThreshold), 
                             this.helpers.getRandomFanSpeed(minNormalFanSpeed, abnormalFanSpeedThreshold), 
                             this.helpers.getRandomFanSpeed(minNormalFanSpeed, abnormalFanSpeedThreshold), 
                           ];
-    telemetryDTO.hashrate = this.helpers.getRandomHashRate(minNormalHashRate, abnormalHashRateThreshold);
+    telemetryDto.hashrate = this.helpers.getRandomHashRate(minNormalHashRate, abnormalHashRateThreshold);
 
-    this.logger.log(JSON.stringify(telemetryDTO));
-    return telemetryDTO;
+    this.logger.log(JSON.stringify(telemetryDto));
+    return telemetryDto;
   }
 }

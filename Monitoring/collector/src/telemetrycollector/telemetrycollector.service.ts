@@ -1,11 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bull';
-import axios from "axios";
-import { Queue } from 'bull';
-import { v4 as uuidv4 } from 'uuid';
-import { TELEMETRY_QUEUE } from './constants';
 import { ConfigService } from '@nestjs/config';
-import { randomUUID } from 'crypto';
+import { Queue } from 'bull';
+import axios from "axios";
+import { TELEMETRY_QUEUE } from './constants';
+import { MinerDto } from './dto';
 
 
 @Injectable()
@@ -18,32 +17,43 @@ export class TelemetryCollectorService {
     ) {
   }
 
-  async getAndQueueProducerTelemetry(minerUrl: string): Promise<void> {
-
+  async getAndQueueProducerTelemetry(minerDto: MinerDto): Promise<string> {
     try {
-      this.logger.log("Fetching telemetry for miner", minerUrl);
-      const response = await axios.get(minerUrl);
+      this.logger.log("Fetching telemetry for miner", JSON.stringify(minerDto));
+      const response = await axios.get(minerDto.minerUrl + minerDto.minerId);
       this.logger.log("Telemetry of miner received successfully", response.data);
 
-      this.logger.log("Queueing telemetry for miner", minerUrl);
+      this.logger.log("Queueing telemetry for miner", minerDto.minerId);
       await this.telemetryQueue.add(response.data);
-      this.logger.log("Queued telemetry for miner successfully", minerUrl);
+      this.logger.log("Queued telemetry for miner successfully", minerDto.minerId);
+      return minerDto.minerId;
     }
     catch(error) {
       this.logger.error(error);
+      throw error;
     }
   }
 
-  //TODO - Move this to fetch from DB after creating a Miner Management Module
-  async getMinerUrls(): Promise<string[]> {
-
-    const minerUrl = this.config.get('MINER_URL');
-    const minerCount = Number(this.config.get('MINER_COUNT'));
-
-    const minerUrls: string[] = [];
-    for (let i = 0; i < minerCount; i++) {
-      minerUrls.push(minerUrl + randomUUID());
+  // Retrieves Miners info with URL and ID
+  async getMiners(): Promise<MinerDto[]> {
+    try {
+      this.logger.log("Fetching Miner Info");
+      const minerServiceUrl = this.config.get('MINERSERVICE_URL');
+      const response = await axios.get(minerServiceUrl);
+      this.logger.log("Fetched Miner data successfully", response.data);
+      
+      const minersToArray: MinerDto[] = await response.data.map((miner) => {
+                                              return {
+                                                minerId: miner.minerId,
+                                                minerUrl: miner.minerUrl,
+                                              }
+      });
+      
+      return minersToArray;
     }
-    return minerUrls;
+    catch(error) {
+      this.logger.error(error);
+      throw error;
+    }
   }
 }

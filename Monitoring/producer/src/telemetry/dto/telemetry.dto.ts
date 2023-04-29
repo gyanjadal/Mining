@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 //import { IsNotEmpty, IsString } from "class-validator"
-import { UUID } from 'crypto';
+import { UUID } from 'node:crypto';
 
-export class TelemetryDTO {
+export class TelemetryDto {
     @ApiProperty()
     id: UUID;
   

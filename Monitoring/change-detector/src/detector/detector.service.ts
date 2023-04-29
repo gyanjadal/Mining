@@ -3,9 +3,9 @@ import { Process, Processor } from '@nestjs/bull';
 import { Job } from 'bull';
 import { PrismaService } from '../prisma/prisma.service';
 import { TELEMETRY_QUEUE } from './constants';
-import { CreateRawTelemetryDTO } from './dto/rawTelemetry.dto'
-import { CreateAnomaliesDTO } from './dto/anomalies.dto'
 import { DetectorHelpers } from './detector.helpers';
+import { RawTelemetryDto } from './dto/rawTelemetry.dto';
+import { ProcessedTelemetryDto } from './dto/processedTelemetry.dto';
 
 @Processor(TELEMETRY_QUEUE)
 @Injectable()
@@ -21,61 +21,57 @@ export class DetectorService {
     const telemetry = JSON.stringify(job.data);
     this.logger.log(telemetry);
 
-    //Save Queue Telemetry to PostGresSQL
-    const rawTelemetryDTO = new CreateRawTelemetryDTO();
-    rawTelemetryDTO.minerId = JSON.parse(telemetry)['id'];
-    //Rethink : Do we want to store individual fields as columns
-    rawTelemetryDTO.minerData = telemetry;
-
+    // Step 1: Save Raw Telemetry to PostGresSQL
     try {
-      await this.saveRawTelemetryToDB(rawTelemetryDTO);
+      this.logger.log("Saving Raw Telemetry : ", telemetry);
+      await this.saveRawTelemetryToDB(telemetry);
+      this.logger.log("Successfully saved Raw Telemetry");
+    }
+    catch(error) {
+      this.logger.error(error);
+    }
 
-      //Detect Anomalies
-      const anomaliesDTOs = await this.detectorHelpers.detectAnomalies(rawTelemetryDTO);
-
-      //Detect Anomalies and Save to DB
-      this.logger.log("Anomalies found: " + anomaliesDTOs.length);
-      await this.saveAnomaliesToDB(anomaliesDTOs);
+    // Step 2: Process Telemetry
+    // Convert Raw into key value pairs and add IsAnomaly flag
+    try {
+      this.logger.log("Processing Raw Telemetry : ", telemetry);
+      await this.processTelemetry(telemetry);
+      this.logger.log("Successfully saved Processed Telemetry");
     }
     catch(error) {
       this.logger.error(error);
     }
   }
 
-  async saveRawTelemetryToDB(
-    rawTelemetryDTO: CreateRawTelemetryDTO,
-  ): Promise<void> {
-      this.logger.log("Saving Raw Telemetry : ", JSON.stringify(rawTelemetryDTO));
-
-      await this.prisma.minerTelemetry.create({
+  private async saveRawTelemetryToDB(telemetry: string): Promise<void> {
+    
+      await this.prisma.minerRawTelemetry.create({
         data: {
-          minerId: rawTelemetryDTO.minerId,
-          minerData: rawTelemetryDTO.minerData,
+          minerId: JSON.parse(telemetry)['id'],
+          minerData: telemetry
         }
       });
     }
   
-  async saveAnomaliesToDB(
-    anomaliesDTOs: CreateAnomaliesDTO[],
-  ): Promise<void> {
-    this.logger.log("Saving Anomalies : ", JSON.stringify(anomaliesDTOs));
+  private async processTelemetry(telemetry: string): Promise<void> {
 
-    //TODO : Convert above to a single call
-    // await this.prisma.anomalies.createMany ({
-    //       data: anomaliesCreateManyInput
-    //     });
-    // }
+    const processedTelemetryDtos: ProcessedTelemetryDto[] = 
+        this.detectorHelpers.convertTelemetryToKeyValueArray(telemetry);
 
-    anomaliesDTOs.forEach(
-      async anomaliesDTO => {
-        await this.prisma.anomalies.create({
+    this.logger.log("Processed property count: " + processedTelemetryDtos.length);
+
+    processedTelemetryDtos.forEach(async dto => {
+    
+      this.logger.log("Creating processed telemetry property : " + dto.propertyName);
+
+      await this.prisma.minerProcessedTelemetry.create({
           data: {
-            minerId: anomaliesDTO.minerId,
-            propertyName: anomaliesDTO.propertyName.toString(),
-            propertyValue: anomaliesDTO.propertyValue.toString(),
+            minerId: dto.minerId,
+            propertyName: dto.propertyName,
+            propertyValue: dto.propertyValue,
+            isAnomaly: dto.isAnomaly
           }
         });
-      }
-    );
-    }
+    });
   }
+}

@@ -1,6 +1,6 @@
-import { IsNotEmpty, IsString } from "class-validator";
+import { IsBoolean, IsNotEmpty, IsString } from "class-validator";
 
-export class CreateAnomaliesDTO {
+export class ProcessedTelemetryDto {
     @IsString()
     @IsNotEmpty()
     minerId: string;
@@ -12,4 +12,8 @@ export class CreateAnomaliesDTO {
     @IsString()
     @IsNotEmpty()
     propertyValue: string;
+
+    @IsBoolean()
+    @IsNotEmpty()
+    isAnomaly: boolean;
 }

@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { TelemetryCollectorService } from '../telemetrycollector.service';
+import { MinerDto } from '../dto';
 
 @Injectable()
 export class CollectorSchedulerService {
@@ -12,12 +13,17 @@ export class CollectorSchedulerService {
   async scheduleTask(): Promise<void> {
       this.logger.log('Waking up to collect data from all miners...');
 
-      const minerUrls: string[] = await this.telemetryCollectorService.getMinerUrls();
+      const miners: MinerDto[] = await this.telemetryCollectorService.getMiners();
+
+      if (miners.length == 0) {
+        this.logger.log('No miners found.');
+        return;
+      }
 
       const tasks : Promise<any>[] = [];
 
-      minerUrls.forEach(minerUrl => {
-        const task = this.telemetryCollectorService.getAndQueueProducerTelemetry(minerUrl);
+      miners.forEach(miner => {
+        const task = this.telemetryCollectorService.getAndQueueProducerTelemetry(miner);
         tasks.push(task);
       });
 

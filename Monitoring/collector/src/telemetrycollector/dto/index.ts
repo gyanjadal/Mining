@@ -1,1 +1,1 @@
-export * from './publishTelemetry.dto'
+export * from './miner.dto'
