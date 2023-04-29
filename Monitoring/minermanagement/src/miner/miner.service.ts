@@ -28,9 +28,9 @@ export class MinerService {
     const minerId = randomUUID();
 
     try {
-      this.logger.log("Saving Miner", JSON.stringify(minerUrlDto));
+      this.logger.log("Saving Miner", minerId);
       await this.saveMinerToDB(minerId, minerUrlDto);
-      this.logger.log("Miner saved", JSON.stringify(minerUrlDto));
+      this.logger.log("Miner saved", minerId);
       return minerId;
     }
     catch(error) {
