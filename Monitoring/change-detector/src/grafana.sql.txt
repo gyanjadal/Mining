@@ -1,0 +1,84 @@
+//Miner Health
+SELECT MAX(States.Up) AS Up, MAX(States.Down) As Down
+FROM
+(SELECT 
+  COUNT(CASE WHEN "propertyValue" = 'up' THEN 1 END) AS Up,
+  COUNT(CASE WHEN "propertyValue" = 'down' THEN 1 END) AS Down
+FROM "MinerProcessedTelemetry" AS "M1"
+WHERE "propertyName" = 'health'
+	AND "createdAt" = (SELECT MAX("createdAt") 
+						FROM "MinerProcessedTelemetry" AS "M2" 
+						WHERE "M1"."minerId" = "M2"."minerId" AND "propertyName" = 'health')
+GROUP BY "propertyValue") AS States
+
+//Pool Health
+SELECT MAX(States.Up) AS Up, MAX(States.Down) As Down
+FROM
+(SELECT 
+  COUNT(CASE WHEN "propertyValue" = 'up' THEN 1 END) AS Up,
+  COUNT(CASE WHEN "propertyValue" = 'down' THEN 1 END) AS Down
+FROM "MinerProcessedTelemetry" AS "M1"
+WHERE "propertyName" = 'pool'
+	AND "createdAt" = (SELECT MAX("createdAt") 
+						FROM "MinerProcessedTelemetry" AS "M2" 
+						WHERE "M1"."minerId" = "M2"."minerId" AND "propertyName" = 'pool')
+GROUP BY "propertyValue") AS States
+
+//Miner Health Trend
+SELECT
+    DATE_TRUNC('minute', "createdAt") AS "minuteBucket", 
+    COUNT(CASE WHEN "propertyValue" = 'up' THEN 1 END) AS Up,
+    COUNT(CASE WHEN "propertyValue" = 'down' THEN 1 END) AS Down
+FROM "MinerProcessedTelemetry" AS "M1"
+WHERE "propertyName" = 'health'
+GROUP BY "minuteBucket"
+
+//Miner Pool Health Trend
+SELECT
+    DATE_TRUNC('minute', "createdAt") AS "minuteBucket", 
+    COUNT(CASE WHEN "propertyValue" = 'up' THEN 1 END) AS Up,
+    COUNT(CASE WHEN "propertyValue" = 'down' THEN 1 END) AS Down
+FROM "MinerProcessedTelemetry" AS "M1"
+WHERE "propertyName" = 'pool'
+GROUP BY "minuteBucket"
+
+//Hashrate Trend
+SELECT
+    DATE_TRUNC('minute', "createdAt") AS "minuteBucket", 
+    AVG("propertyValue"::INTEGER)::INTEGER AS "hashrate"
+FROM "MinerProcessedTelemetry" AS "M1"
+WHERE "propertyName" = 'hashrate'
+GROUP BY "minuteBucket"
+
+//Temp In Trend
+SELECT
+	DATE_TRUNC('minute', "createdAt") AS "minuteBucket", 
+	AVG(CASE WHEN "propertyName" = 'temp1_in' THEN "propertyValue"::FLOAT END)::DECIMAL AS "temp1_in",
+	AVG(CASE WHEN "propertyName" = 'temp2_in' THEN "propertyValue"::FLOAT END)::DECIMAL AS "temp2_in",
+	AVG(CASE WHEN "propertyName" = 'temp3_in' THEN "propertyValue"::FLOAT END)::DECIMAL AS "temp3_in",
+	AVG(CASE WHEN "propertyName" = 'temp4_in' THEN "propertyValue"::FLOAT END)::DECIMAL AS "temp4_in"
+FROM "MinerProcessedTelemetry" AS "M1"
+WHERE "propertyName" LIKE 'temp%' AND "propertyName" LIKE '%_in'
+GROUP BY "minuteBucket"
+
+//Temp Out Trend
+SELECT
+	DATE_TRUNC('minute', "createdAt") AS "minuteBucket", 
+	AVG(CASE WHEN "propertyName" = 'temp1_out' THEN "propertyValue"::FLOAT END)::DECIMAL AS "temp1_out",
+	AVG(CASE WHEN "propertyName" = 'temp2_out' THEN "propertyValue"::FLOAT END)::DECIMAL AS "temp2_out",
+	AVG(CASE WHEN "propertyName" = 'temp3_out' THEN "propertyValue"::FLOAT END)::DECIMAL AS "temp3_out",
+	AVG(CASE WHEN "propertyName" = 'temp4_out' THEN "propertyValue"::FLOAT END)::DECIMAL AS "temp4_out"
+FROM "MinerProcessedTelemetry" AS "M1"
+WHERE "propertyName" LIKE 'temp%' AND "propertyName" LIKE '%_out'
+GROUP BY "minuteBucket"
+
+//Fans
+SELECT
+	DATE_TRUNC('minute', "createdAt") AS "minuteBucket", 
+	AVG(CASE WHEN "propertyName" = 'fan1' THEN "propertyValue"::FLOAT END)::DECIMAL AS "fan1",
+	AVG(CASE WHEN "propertyName" = 'fan2' THEN "propertyValue"::FLOAT END)::DECIMAL AS "fan2",
+	AVG(CASE WHEN "propertyName" = 'fan3' THEN "propertyValue"::FLOAT END)::DECIMAL AS "fan3",
+	AVG(CASE WHEN "propertyName" = 'fan4' THEN "propertyValue"::FLOAT END)::DECIMAL AS "fan4"
+FROM "MinerProcessedTelemetry" AS "M1"
+WHERE "propertyName" LIKE 'fan%'
+GROUP BY "minuteBucket"

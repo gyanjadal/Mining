@@ -29,10 +29,10 @@ export class DetectorHelpers {
                 //do nothing
             }
             else if (prop == "fans") {
-                const fanSpeedArray = minerDataObject[prop].toString().split(',');
-                fanSpeedArray.forEach(async fanSpeed => {
-                    processedTelemetryDtos.push(this.GetProcessedTelemetryDto(minerId, "fan", fanSpeed));
-                })
+                const fanSpeedMap = this.convertStringToMap(minerDataObject[prop].toString(), "fan");
+                for (const [key, value] of fanSpeedMap.entries()) {
+                    processedTelemetryDtos.push(this.GetProcessedTelemetryDto(minerId, key, value));
+                }
             }
             else {
                 processedTelemetryDtos.push(this.GetProcessedTelemetryDto(minerId, prop, minerDataObject[prop]));
@@ -66,7 +66,7 @@ export class DetectorHelpers {
             return Number(propertyValue) > MAXNORMALTEMPOUT;
         }
 
-        if (propertyName == "fan") {
+        if (propertyName.startsWith("fan")) {
             return Number(propertyValue) < MINNORMALFANSPEED;
         }
 
@@ -76,4 +76,12 @@ export class DetectorHelpers {
 
         return false;
     }
+
+    private convertStringToMap(input: string, keyPrefix: string): Map<string, string> {
+        const values = input.split(',');
+        return values.reduce((map, value, index) => {
+          map.set(keyPrefix + `${index + 1}`, value);
+          return map;
+        }, new Map<string, string>());
+      }
 }
