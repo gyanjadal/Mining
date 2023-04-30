@@ -11,22 +11,23 @@ export class TelemetryHelpers {
         return upDown.toString();
     }
 
-    getRandomTempIn(): number {
-        return 45 + Number(Math.random().toFixed(2)) * 15;
-    }
-
-    getRandomTempOut(maxNormalTemp: number, abnormalTempThreshold: number) {
+    getRandomTempIn(maxNormalTemp: number, threshold: number): number {
         const r = Number(Math.random().toFixed(2)) * 25;
-        return Math.random() >= abnormalTempThreshold ? maxNormalTemp - r : maxNormalTemp + r;
+        return Math.random() >= threshold ? maxNormalTemp - r : maxNormalTemp + r;
     }
 
-    getRandomHashRate(minNormalHashRate: number, abnormalHashRateThreshold: number) {
-        const r = Number(Math.random().toFixed(2)) * 2000;
-        return Math.random() >= abnormalHashRateThreshold ? minNormalHashRate + r : minNormalHashRate - r;
+    getRandomTempOut(maxNormalTemp: number, threshold: number) {
+        const r = Number(Math.random().toFixed(2)) * 25;
+        return Math.random() >= threshold ? maxNormalTemp - r : maxNormalTemp + r;
     }
 
-    getRandomFanSpeed(minNormalFanSpeed: number, abnormalFanSpeedThreshold: number) {
+    getRandomHashRate(minNormalHashRate: number, threshold: number) {
         const r = Number(Math.random().toFixed(2)) * 2000;
-        return Math.random() >= abnormalFanSpeedThreshold ? minNormalFanSpeed + r : minNormalFanSpeed - r;
+        return Math.random() >= threshold ? minNormalHashRate + r : minNormalHashRate - r;
+    }
+
+    getRandomFanSpeed(minNormalFanSpeed: number, threshold: number) {
+        const r = Number(Math.random().toFixed(2)) * 2000;
+        return Math.random() >= threshold ? minNormalFanSpeed + r : minNormalFanSpeed - r;
     }
 }

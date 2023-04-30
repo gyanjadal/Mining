@@ -21,25 +21,35 @@ export class DetectorHelpers {
     convertTelemetryToKeyValueArray(telemetry: string): ProcessedTelemetryDto[] {
         
         const processedTelemetryDtos: ProcessedTelemetryDto[] = [];
-        const minerDataObject = JSON.parse(telemetry);
-        this.logger.log("MinerDataObject property count is : " +  Object.keys(minerDataObject).length)
-        const minerId = minerDataObject["id"];
-        Object.keys(minerDataObject).forEach(prop => {
-            if (prop == "id") {
-                //do nothing
-            }
-            else if (prop == "fans") {
-                const fanSpeedMap = this.convertStringToMap(minerDataObject[prop].toString(), "fan");
-                for (const [key, value] of fanSpeedMap.entries()) {
-                    processedTelemetryDtos.push(this.GetProcessedTelemetryDto(minerId, key, value));
-                }
-            }
-            else {
-                processedTelemetryDtos.push(this.GetProcessedTelemetryDto(minerId, prop, minerDataObject[prop]));
-            }
-            this.logger.log("ProcessedTelemetryDtos property count is : " +  processedTelemetryDtos.length)
-        });
+        const parsedTelemetryObject = JSON.parse(telemetry);
 
+        const minerId = parsedTelemetryObject.minerId;
+        const telemetryDtos = parsedTelemetryObject.telemetryDtos;
+
+        this.logger.log("Processing MinerId", minerId);
+        this.logger.log("Miner Telemetry Dtos count is : " +  telemetryDtos.length);
+
+        //Now convert each telemetry dto into keyvalue format
+        telemetryDtos.forEach((telemetryDto) => {
+
+            this.logger.log("telemetryDto property count is : " + Object.keys(telemetryDto).length);
+    
+            Object.keys(telemetryDto).forEach(prop => {
+                if (prop == "id") {
+                    //do nothing
+                }
+                else if (prop == "fans") {
+                    const fanSpeedMap = this.convertStringToMap(telemetryDto[prop].toString(), "fan");
+                    for (const [key, value] of fanSpeedMap.entries()) {
+                        processedTelemetryDtos.push(this.GetProcessedTelemetryDto(minerId, key, value));
+                    }
+                }
+                else {
+                    processedTelemetryDtos.push(this.GetProcessedTelemetryDto(minerId, prop, telemetryDto[prop]));
+                }
+                this.logger.log("ProcessedTelemetryDtos property count is : " +  processedTelemetryDtos.length)
+            });
+        });
         return processedTelemetryDtos;
     }
     

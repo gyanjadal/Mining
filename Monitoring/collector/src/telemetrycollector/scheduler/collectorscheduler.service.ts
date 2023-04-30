@@ -9,7 +9,7 @@ export class CollectorSchedulerService {
 
     constructor(private telemetryCollectorService: TelemetryCollectorService) {}
 
-  @Cron(CronExpression.EVERY_30_SECONDS)
+  @Cron(CronExpression.EVERY_30_MINUTES)
   async scheduleTask(): Promise<void> {
       this.logger.log('Waking up to collect data from all miners...');
 
@@ -28,6 +28,6 @@ export class CollectorSchedulerService {
       });
 
       await Promise.all(tasks);
-      this.logger.log('Finished collection of data from all miners.');
+      this.logger.log('Finished collection of data from all ' + miners.length + ' miners.');
     }
   }

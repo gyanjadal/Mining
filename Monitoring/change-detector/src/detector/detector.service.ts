@@ -19,39 +19,47 @@ export class DetectorService {
   async processQueue(job: Job<unknown>): Promise<void> {
     
     const telemetry = JSON.stringify(job.data);
-    this.logger.log(telemetry);
 
     // Step 1: Save Raw Telemetry to PostGresSQL
     try {
-      this.logger.log("Saving Raw Telemetry : ", telemetry);
-      await this.saveRawTelemetryToDB(telemetry);
-      this.logger.log("Successfully saved Raw Telemetry");
+
+      this.logger.log("Saving Raw Telemetry : ");
+      
+      await this.saveRawTelemetryToDB(telemetry)
+            .then( async result => {
+      
+              this.logger.log("Successfully saved Raw Telemetry");
+    
+              // Step 2: Process Telemetry
+              // Convert Raw into key value pairs and add IsAnomaly flag
+              try {
+                this.logger.log("Processing Raw Telemetry...");
+                await this.processTelemetry(telemetry)
+                this.logger.log("Successfully saved Processed Telemetry");
+              }
+              catch(error) {
+                this.logger.error(error);
+              }
+            });
     }
     catch(error) {
       this.logger.error(error);
     }
 
-    // Step 2: Process Telemetry
-    // Convert Raw into key value pairs and add IsAnomaly flag
-    try {
-      this.logger.log("Processing Raw Telemetry : ", telemetry);
-      await this.processTelemetry(telemetry);
-      this.logger.log("Successfully saved Processed Telemetry");
-    }
-    catch(error) {
-      this.logger.error(error);
-    }
+   
   }
 
   private async saveRawTelemetryToDB(telemetry: string): Promise<void> {
     
-      await this.prisma.minerRawTelemetry.create({
+    const parsedTelemetry = JSON.parse(telemetry);
+   
+    await this.prisma.minerRawTelemetry.create({
         data: {
-          minerId: JSON.parse(telemetry)['id'],
-          minerData: telemetry
+          minerId: parsedTelemetry.minerId,
+          minerData: JSON.stringify(parsedTelemetry.telemetryDtos)
         }
-      });
-    }
+    })
+  }
   
   private async processTelemetry(telemetry: string): Promise<void> {
 
@@ -62,7 +70,7 @@ export class DetectorService {
 
     processedTelemetryDtos.forEach(async dto => {
     
-      this.logger.log("Creating processed telemetry property : " + dto.propertyName);
+      this.logger.log("Saving processed telemetry property : " + dto.propertyName);
 
       await this.prisma.minerProcessedTelemetry.create({
           data: {
@@ -71,7 +79,7 @@ export class DetectorService {
             propertyValue: dto.propertyValue,
             isAnomaly: dto.isAnomaly
           }
-        });
+        })
     });
   }
 }

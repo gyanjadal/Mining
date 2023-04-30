@@ -25,22 +25,38 @@ WHERE "propertyName" = 'pool'
 GROUP BY "propertyValue") AS States
 
 //Miner Health Trend
-SELECT
-    DATE_TRUNC('minute', "createdAt") AS "minuteBucket", 
+SELECT 
+	minuteBucket, 
     COUNT(CASE WHEN "propertyValue" = 'up' THEN 1 END) AS Up,
     COUNT(CASE WHEN "propertyValue" = 'down' THEN 1 END) AS Down
-FROM "MinerProcessedTelemetry" AS "M1"
-WHERE "propertyName" = 'health'
-GROUP BY "minuteBucket"
+FROM (
+SELECT DISTINCT ON ("minerId", minuteBucket) "minerId", "propertyValue", minuteBucket
+FROM (
+  SELECT "minerId", "propertyValue", date_trunc('minute', "createdAt") AS minuteBucket
+  FROM "MinerProcessedTelemetry"
+  WHERE "propertyName" = 'health'
+  ORDER BY "minerId", "createdAt" DESC
+) AS subquery
+ORDER BY "minerId", minuteBucket DESC) AS subquery2
+GROUP BY minuteBucket
+ORDER BY minuteBucket DESC
 
 //Miner Pool Health Trend
-SELECT
-    DATE_TRUNC('minute', "createdAt") AS "minuteBucket", 
+SELECT 
+	minuteBucket, 
     COUNT(CASE WHEN "propertyValue" = 'up' THEN 1 END) AS Up,
     COUNT(CASE WHEN "propertyValue" = 'down' THEN 1 END) AS Down
-FROM "MinerProcessedTelemetry" AS "M1"
-WHERE "propertyName" = 'pool'
-GROUP BY "minuteBucket"
+FROM (
+SELECT DISTINCT ON ("minerId", minuteBucket) "minerId", "propertyValue", minuteBucket
+FROM (
+  SELECT "minerId", "propertyValue", date_trunc('minute', "createdAt") AS minuteBucket
+  FROM "MinerProcessedTelemetry"
+  WHERE "propertyName" = 'pool'
+  ORDER BY "minerId", "createdAt" DESC
+) AS subquery
+ORDER BY "minerId", minuteBucket DESC) AS subquery2
+GROUP BY minuteBucket
+ORDER BY minuteBucket DESC
 
 //Hashrate Trend
 SELECT

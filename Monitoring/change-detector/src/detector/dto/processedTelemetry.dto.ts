@@ -1,4 +1,4 @@
-import { IsBoolean, IsNotEmpty, IsString } from "class-validator";
+import { IsBoolean, IsDate, IsNotEmpty, IsString } from "class-validator";
 
 export class ProcessedTelemetryDto {
     @IsString()
@@ -16,4 +16,9 @@ export class ProcessedTelemetryDto {
     @IsBoolean()
     @IsNotEmpty()
     isAnomaly: boolean;
+
+    @IsDate()
+    @IsNotEmpty()
+    clientTime: Date;
+
 }

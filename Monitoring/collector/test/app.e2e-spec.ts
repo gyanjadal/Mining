@@ -15,10 +15,13 @@ describe('AppController (e2e)', () => {
     await app.init();
   });
 
-  it('/ (GET)', () => {
-    return request(app.getHttpServer())
-      .get('/')
-      .expect(200)
-      .expect('Hello World!');
+  it('/telemetry/pull ({POST})', async () => {
+    const data = { minerId: 'e1595467-c219-4061-a0f9-2164a8618466', minerUrl: 'http://localhost:3310/telemetry/' };
+    const response = await request(app.getHttpServer())
+        .post('/telemetry/pull')
+        .send(data)
+        .expect(201)
+
+      expect(response.body.minerId).toEqual("e1595467-c219-4061-a0f9-2164a8618466");
   });
 });

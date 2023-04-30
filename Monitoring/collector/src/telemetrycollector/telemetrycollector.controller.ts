@@ -8,7 +8,7 @@ export class TelemetryCollectorController {
         
     // Pulls telemetry from producer using URL and ID and queues it. Use for test
     @Post('pull')
-    async getAndQueueProducerTelemetry(@Body() dto: MinerDto): Promise<string> {
+    async getAndQueueProducerTelemetry(@Body() dto: MinerDto): Promise<MinerDto[]> {
         return await this.telemetryCollectorService.getAndQueueProducerTelemetry(dto);
     }
 }

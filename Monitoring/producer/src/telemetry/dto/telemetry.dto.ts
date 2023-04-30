@@ -41,4 +41,7 @@ export class TelemetryDto {
   
     @ApiProperty()
     hashrate: number;
+
+    @ApiProperty()
+    clientTime: Date;
   }
