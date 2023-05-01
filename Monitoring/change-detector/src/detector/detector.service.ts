@@ -22,12 +22,12 @@ export class DetectorService {
     // Step 1: Save Raw Telemetry to PostGresSQL
     try {
 
-      this.logger.log("Saving Raw Telemetry : ");
+      this.logger.log("Saving Raw Telemetry...");
       
       await this.saveRawTelemetryToDB(telemetry)
             .then( async result => {
       
-              this.logger.log("Successfully saved Raw Telemetry");
+              this.logger.log("Successfully saved Raw Telemetry.");
     
               // Step 2: Process Telemetry
               // Convert Raw into key value pairs and add IsAnomaly flag
@@ -69,8 +69,6 @@ export class DetectorService {
 
     processedTelemetryDtos.forEach(async dto => {
     
-      this.logger.log("Saving processed telemetry property : " + dto.propertyName);
-
       await this.prisma.minerProcessedTelemetry.create({
           data: {
             minerId: dto.minerId,

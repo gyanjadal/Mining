@@ -32,8 +32,6 @@ export class DetectorHelpers {
         //Now convert each telemetry dto into keyvalue format
         telemetryDtos.forEach((telemetryDto) => {
 
-            this.logger.log("telemetryDto property count is : " + Object.keys(telemetryDto).length);
-    
             Object.keys(telemetryDto).forEach(prop => {
                 if (prop == "id") {
                     //do nothing
@@ -47,7 +45,6 @@ export class DetectorHelpers {
                 else {
                     processedTelemetryDtos.push(this.GetProcessedTelemetryDto(minerId, prop, telemetryDto[prop]));
                 }
-                this.logger.log("ProcessedTelemetryDtos property count is : " +  processedTelemetryDtos.length)
             });
         });
         return processedTelemetryDtos;
