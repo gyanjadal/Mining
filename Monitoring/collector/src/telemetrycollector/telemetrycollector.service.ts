@@ -17,7 +17,7 @@ export class TelemetryCollectorService {
     ) {
   }
 
-  async getAndQueueProducerTelemetry(minerDto: MinerDto): Promise<MinerDto[]> {
+  async getAndQueueProducerTelemetry(minerDto: MinerDto): Promise<MinerDto> {
     try {
       this.logger.log("Fetching telemetry for miner", JSON.stringify(minerDto));
       const response = await axios.get(minerDto.minerUrl + minerDto.minerId);
@@ -26,7 +26,10 @@ export class TelemetryCollectorService {
       this.logger.log("Queueing telemetry for miner", minerDto.minerId);
       await this.telemetryQueue.add(response.data);
       this.logger.log("Queued telemetry for miner successfully", minerDto.minerId);
-      return response.data;
+      return {
+        minerId: response.data.minerId,
+        minerUrl: minerDto.minerUrl
+      }
     }
     catch(error) {
       this.logger.error(error);

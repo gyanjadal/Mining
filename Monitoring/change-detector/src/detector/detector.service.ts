@@ -4,7 +4,6 @@ import { Job } from 'bull';
 import { PrismaService } from '../prisma/prisma.service';
 import { TELEMETRY_QUEUE } from './constants';
 import { DetectorHelpers } from './detector.helpers';
-import { RawTelemetryDto } from './dto/rawTelemetry.dto';
 import { ProcessedTelemetryDto } from './dto/processedTelemetry.dto';
 
 @Processor(TELEMETRY_QUEUE)
