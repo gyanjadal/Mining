@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Process, Processor } from '@nestjs/bull';
-import { Job } from 'bull';
+import { InjectQueue, Process, Processor } from '@nestjs/bull';
+import { Job, Queue } from 'bull';
 import { PrismaService } from '../prisma/prisma.service';
 import { TELEMETRY_QUEUE } from './constants';
 import { DetectorHelpers } from './detector.helpers';
@@ -9,7 +9,9 @@ import { ProcessedTelemetryDto } from './dto/processedTelemetry.dto';
 @Processor(TELEMETRY_QUEUE)
 @Injectable()
 export class DetectorService {
-  constructor(private prisma: PrismaService, 
+  constructor(@InjectQueue(TELEMETRY_QUEUE) 
+              private readonly telemetryQueue: Queue,
+              private prisma: PrismaService, 
               private detectorHelpers: DetectorHelpers) {}
 
   private readonly logger = new Logger(DetectorService.name);
@@ -24,28 +26,22 @@ export class DetectorService {
 
       this.logger.log("Saving Raw Telemetry...");
       
-      await this.saveRawTelemetryToDB(telemetry)
-            .then( async result => {
-      
-              this.logger.log("Successfully saved Raw Telemetry.");
+      await this.saveRawTelemetryToDB(telemetry);
+      this.logger.log("Successfully saved Raw Telemetry.");
     
-              // Step 2: Process Telemetry
-              // Convert Raw into key value pairs and add IsAnomaly flag
-              try {
-                this.logger.log("Processing Raw Telemetry...");
-                await this.processTelemetry(telemetry)
-                this.logger.log("Successfully saved Processed Telemetry");
-              }
-              catch(error) {
-                this.logger.error(error);
-              }
-            });
+      // Step 2: Process Telemetry
+      // Convert Raw into key value pairs and add IsAnomaly flag
+      this.logger.log("Processing Raw Telemetry...");
+      await this.processTelemetry(telemetry)
+      this.logger.log("Successfully saved Processed Telemetry");
+
+      const queueCountAfter = await this.telemetryQueue.getWaitingCount();
+      this.logger.log("Items waiting in queue: ", queueCountAfter);
+
     }
     catch(error) {
       this.logger.error(error);
     }
-
-   
   }
 
   private async saveRawTelemetryToDB(telemetry: string): Promise<void> {

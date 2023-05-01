@@ -21,15 +21,19 @@ export class TelemetryCollectorService {
     try {
       this.logger.log("Fetching telemetry for miner", JSON.stringify(minerDto));
       const response = await axios.get(minerDto.minerUrl + minerDto.minerId);
-      this.logger.log("Telemetry of miner received successfully", response.data);
+      this.logger.log("Telemetry of miner received successfully", response.data.minerId);
+
+      const queueCountBefore = await this.telemetryQueue.getWaitingCount();
+      this.logger.log("Items in queue before queueing: ", queueCountBefore);
 
       this.logger.log("Queueing telemetry for miner", minerDto.minerId);
       await this.telemetryQueue.add(response.data);
       this.logger.log("Queued telemetry for miner successfully", minerDto.minerId);
-      return {
-        minerId: response.data.minerId,
-        minerUrl: minerDto.minerUrl
-      }
+
+      const queueCountAfter = await this.telemetryQueue.getWaitingCount();
+      this.logger.log("Items in queue after queueing: ", queueCountAfter);
+
+      return minerDto;
     }
     catch(error) {
       this.logger.error(error);
