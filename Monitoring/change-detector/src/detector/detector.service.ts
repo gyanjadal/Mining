@@ -41,6 +41,9 @@ export class DetectorService {
     }
     catch(error) {
       this.logger.error(error);
+       // Release the connection on error
+      await this.prisma.$disconnect()
+      throw error;
     }
   }
 
